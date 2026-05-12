@@ -87,14 +87,14 @@ def limpar_negocios_fechados():
     arquivo_geral = pegar_arquivo_mais_recente("geral")
     df = pd.read_excel(arquivo_geral, sheet_name='Negócios Fechados', header=1)
     
-    # Filtro de Data (Janela de 1 mês)
+    # Filtro de Data (1 mês)
     df['Data de fechamento'] = pd.to_datetime(df['Data de fechamento'], errors='coerce')
     df = df[(df['Data de fechamento'] >= '2026-04-12') & (df['Data de fechamento'] <= '2026-05-12')]
 
-    # NOVA LIMPEZA DE PREÇO (PRO)
+    # Limpeza de preço
     def tratar_preco(valor):
-        texto = str(valor).replace('R$', '').replace(' ', '').strip()
-        if texto.lower() in ['nan', 'sempreço', '0', '']: return 0
+        texto = str(valor).replace('R$', '').replace(' ', '').strip() # strip tira os espaços antes e depois do texto
+        if texto.lower() in ['nan', 'sempreço', '0', '']: return 0 # Se o valor for vazio, "sem preço", 0 ou NaN, já retorna 0
         
         # Se tem vírgula e ponto (1.500,00), tira o ponto e troca vírgula por ponto
         if ',' in texto and '.' in texto:
@@ -107,7 +107,7 @@ def limpar_negocios_fechados():
 
     df['Preço Formatado'] = df['Preço'].apply(tratar_preco).fillna(0)
     
-    # Filtro de corte (Acima de 50k para ser venda real)
+    # Filtro de corte (Acima de 50k para ser venda real ao invés de locação ou erro de preenchimento)
     df = df[df['Preço Formatado'] >= 50000]
     
     return df

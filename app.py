@@ -1,6 +1,7 @@
 import streamlit as st # pip install streamlit
 import datetime
 from streamlit_autorefresh import st_autorefresh # pip install streamlit-autorefresh
+import plotly.express as px # pip install plotly
 
 import etl_praialar # arquivo com as funções de limpeza dos dados, que já devolve os DataFrames prontos pra usar
 
@@ -59,10 +60,31 @@ st.dataframe(df_conversao, hide_index=True)
 st.divider()
 
 st.write("Distribuição de Leads por Canal:")
-canais = ['Portal', 'Internet', 'Showroom', 'Telefone', 'Rede social', 'Planilha', 'WhatsApp']
+
+# Tirei 'Portal' da lista, pois ela é uma coluna de texto
+canais = ['Internet', 'Showroom', 'Telefone', 'Rede social', 'Planilha', 'WhatsApp']
+
+# Pega a soma dos canais
 contagem_para_grafico = df_vendasOrigem[canais].sum()
-st.bar_chart(contagem_para_grafico, height=400, horizontal=True) # bar_chart é o gráfico de barras
-#horizontal=True deixa as barras na horizontal & height é a altura do gráfico
+
+# Filtra apenas os canais que tiveram mais de 0 leads
+contagem_para_grafico = contagem_para_grafico[contagem_para_grafico > 0]
+
+# O Plotly gosta de ler DataFrames em vez de Séries, então converti
+# Plotly é bidimensional, então precisa de uma coluna pra nome do canal e outra pra quantidade. O reset_index() transforma o nome do canal em uma coluna normal, e a linha abaixo renomeia as colunas pra ficar mais fácil de usar no gráfico
+df_pizza = contagem_para_grafico.reset_index()
+df_pizza.columns = ['Canal', 'Quantidade']
+
+# Cria o gráfico de Pizza (Rosca)
+fig = px.pie(
+    df_pizza, 
+    values='Quantidade', 
+    names='Canal', 
+    hole=0.4 # Deixa o gráfico em formato de rosca, se quiser pizza normal é só tirar essa linha
+)
+
+# Renderiza o gráfico na tela
+st.plotly_chart(fig, use_container_width=True)
 
 
 
