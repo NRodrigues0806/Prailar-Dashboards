@@ -1,7 +1,7 @@
 import streamlit as st # pip install streamlit
 import datetime
 from streamlit_autorefresh import st_autorefresh # pip install streamlit-autorefresh
-import plotly.express as px # pip install plotly
+import plotly.express as px # pip install plotly / graficos mais bonitos e interativos
 
 import etl_praialar # arquivo com as funções de limpeza dos dados, que já devolve os DataFrames prontos pra usar
 
@@ -97,9 +97,21 @@ st.subheader("🏆 Gráfico: Ranking Corretores - Imóveis ativos / vendas (12/0
 
 df_rankingImoveis = etl_praialar.limpar_ranking()
 
-df_rankingImoveis = df_rankingImoveis.sort_values(by='TOTAL DE IMÓVEIS', ascending=False)
-st.bar_chart(data=df_rankingImoveis, x='CORRETOR', y='TOTAL DE IMÓVEIS', horizontal=True, height=500)
 
+# (ascending=True) - O gráfico desenha de baixo para cima, empurrando os maiores pro alto
+df_rankingImoveis = df_rankingImoveis.sort_values(by='TOTAL DE IMÓVEIS', ascending=True)
+
+# Cria o gráfico de barras horizontal com Plotly
+fig_ranking = px.bar(
+    df_rankingImoveis,
+    x='TOTAL DE IMÓVEIS',
+    y='CORRETOR',
+    orientation='h', # 'h' avisa que é horizontal
+    height=500
+)
+
+# Renderiza na tela
+st.plotly_chart(fig_ranking, use_container_width=True)
 
 
 

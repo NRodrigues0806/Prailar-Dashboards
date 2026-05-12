@@ -1,5 +1,5 @@
-import pandas as pd
-import os
+import pandas as pd # pip install pandas / biblioteca de manipulação de dados, leitura de Excel, etc
+import os # biblioteca para lidar com arquivos e pastas do sistema operacional, como verificar data de modificação dos arquivos
 import glob # biblioteca pra procurar arquivos no computador, usando padrões de nome, tipo, etc
 
 
