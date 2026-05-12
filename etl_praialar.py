@@ -33,10 +33,23 @@ def limpar_visitas():
     
     # Faz a limpeza
     df = df[df['Status visita'] == 'Realizada'] # Só deixa as visitas realizadas
-    df = df.drop_duplicates(subset=['ID do lead']) #subset é a coluna que ele vai olhar pra ver se tem repetido ou não
+    df = df.drop_duplicates() # Remove linhas duplicadas, se houver
     df = df.drop(columns=['Telefone apenas dígitos', 'Email do cliente'], errors='ignore')
+
+    # obriga o Python a ler o primeiro número como DIA, evitando o erro do "None"
+    df['Data'] = pd.to_datetime(df['Data'], dayfirst=True, errors='coerce')
+    
+    # Se alguma linha ficou sem data (None) por erro de preenchimento do corretor, removemos a linha
+    df = df.dropna(subset=['Data'])
+    
+    # ORDENAR DECRESCENTE (Mais recentes no topo)
+    df = df.sort_values(by='Data', ascending=False)
+    
+    # visual bonito de Dia/Mês/Ano
+    df['Data'] = df['Data'].dt.strftime('%d/%m/%Y')
     
     return df
+
 
 def limpar_vendas():
     # Usa a automação no lugar do arquivo com nome fixo
@@ -71,26 +84,31 @@ def limpar_ranking():
 
 
 def limpar_negocios_fechados():
-
-    arquivo_geral = pegar_arquivo_mais_recente("geral") # palavra chave
+    arquivo_geral = pegar_arquivo_mais_recente("geral")
+    df = pd.read_excel(arquivo_geral, sheet_name='Negócios Fechados', header=1)
     
-    # apenas a aba que importa
-    df = pd.read_excel(arquivo_geral, sheet_name='Negócios Fechados',header=1)
-
-    # Transforma a coluna em Data de verdade pro o Python entender
+    # Filtro de Data (Janela de 1 mês)
     df['Data de fechamento'] = pd.to_datetime(df['Data de fechamento'], errors='coerce')
-    
-    # FILTRO: Só deixa o que aconteceu entre 12/04/2026 e 12/05/2026 (1 mês)
     df = df[(df['Data de fechamento'] >= '2026-04-12') & (df['Data de fechamento'] <= '2026-05-12')]
+
+    # NOVA LIMPEZA DE PREÇO (PRO)
+    def tratar_preco(valor):
+        texto = str(valor).replace('R$', '').replace(' ', '').strip()
+        if texto.lower() in ['nan', 'sempreço', '0', '']: return 0
+        
+        # Se tem vírgula e ponto (1.500,00), tira o ponto e troca vírgula por ponto
+        if ',' in texto and '.' in texto:
+            texto = texto.replace('.', '').replace(',', '.')
+        # Se tem só vírgula (1500,00), troca por ponto
+        elif ',' in texto:
+            texto = texto.replace(',', '.')
+            
+        return pd.to_numeric(texto, errors='coerce')
+
+    df['Preço Formatado'] = df['Preço'].apply(tratar_preco).fillna(0)
     
-    # A coluna 'Preço' vem sem um padrão do sistema (ex:"R$ 355000.0" ou "Sem preço")
-    df['Preço Formatado'] = df['Preço'].astype(str)
-    
-    # Apagar a palavra "R$" e os espaços pra ficar só o número
-    df['Preço Formatado'] = df['Preço Formatado'].str.replace('R$', '', regex=False).str.replace(' ', '', regex=False)
-    
-    # Forçar a virar número. O que era texto (ex: "Sem preço") vira vazio e preenche com 0
-    df['Preço Formatado'] = pd.to_numeric(df['Preço Formatado'], errors='coerce').fillna(0)
+    # Filtro de corte (Acima de 50k para ser venda real)
+    df = df[df['Preço Formatado'] >= 50000]
     
     return df
 
