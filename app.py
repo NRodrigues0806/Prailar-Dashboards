@@ -77,3 +77,42 @@ df_rankingImoveis = etl_praialar.limpar_ranking()
 
 df_rankingImoveis = df_rankingImoveis.sort_values(by='TOTAL DE IMÓVEIS', ascending=False)
 st.bar_chart(data=df_rankingImoveis, x='CORRETOR', y='TOTAL DE IMÓVEIS', horizontal=True, height=500)
+
+
+
+
+
+# BLOCO NEGÓCIOS FECHADOS
+
+st.divider()
+st.subheader("💰 Desempenho Financeiro (Negócios Fechados - 12/04 até 12/05)")
+
+# Chama a função do ETL
+df_negocios = etl_praialar.limpar_negocios_fechados()
+
+# Tabela das vendas
+st.write("📋 Maiores Vendas do Período:")
+
+# Seleciona as colunas e ordena
+df_resumo_vendas = df_negocios[['Data de fechamento', 'Nome', 'Vendedor', 'Preço Formatado']]
+df_resumo_vendas = df_resumo_vendas.sort_values(by='Preço Formatado', ascending=False)
+
+# 2. Renomeia as colunas pra UX
+df_resumo_vendas = df_resumo_vendas.rename(columns={
+    "Data de fechamento": "Data de Fechamento",
+    "Nome": "Cliente",
+    "Vendedor": "Corretor",
+    "Preço Formatado": "Valor da Venda"
+})
+
+# Criar estilização dos valores em BRL e formatação da data usando lambda pra não dar erro caso o valor não seja uma data válida (ex: célula vazia)
+df_estilizado = df_resumo_vendas.style.format({
+    # Formata a data (Verifica se é uma data válida antes pra não dar erro)
+    "Data de Fechamento": lambda x: x.strftime("%d/%m/%Y %H:%M") if hasattr(x, 'strftime') else "", # Se for uma data, formata. Se não, deixa vazio
+    
+    # trocar vírgulas e pontos para BRL
+    "Valor da Venda": lambda x: f"R$ {x:,.2f}".replace(",", "X").replace(".", ",").replace("X", ".")
+})
+
+# 4. Mostramos a tabela estilizada na tela
+st.dataframe(df_estilizado, hide_index=True)

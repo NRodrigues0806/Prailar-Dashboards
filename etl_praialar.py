@@ -70,6 +70,31 @@ def limpar_ranking():
     return df
 
 
+def limpar_negocios_fechados():
+
+    arquivo_geral = pegar_arquivo_mais_recente("geral") # palavra chave
+    
+    # apenas a aba que importa
+    df = pd.read_excel(arquivo_geral, sheet_name='Negócios Fechados',header=1)
+
+    # Transforma a coluna em Data de verdade pro o Python entender
+    df['Data de fechamento'] = pd.to_datetime(df['Data de fechamento'], errors='coerce')
+    
+    # FILTRO: Só deixa o que aconteceu entre 12/04/2026 e 12/05/2026 (1 mês)
+    df = df[(df['Data de fechamento'] >= '2026-04-12') & (df['Data de fechamento'] <= '2026-05-12')]
+    
+    # A coluna 'Preço' vem sem um padrão do sistema (ex:"R$ 355000.0" ou "Sem preço")
+    df['Preço Formatado'] = df['Preço'].astype(str)
+    
+    # Apagar a palavra "R$" e os espaços pra ficar só o número
+    df['Preço Formatado'] = df['Preço Formatado'].str.replace('R$', '', regex=False).str.replace(' ', '', regex=False)
+    
+    # Forçar a virar número. O que era texto (ex: "Sem preço") vira vazio e preenche com 0
+    df['Preço Formatado'] = pd.to_numeric(df['Preço Formatado'], errors='coerce').fillna(0)
+    
+    return df
+
+
 # Se rodar esse arquivo direto, ele só testa as funções
 if __name__ == "__main__":
     print("Testando a limpeza dos dados...")
