@@ -1,8 +1,8 @@
-# Ignorar a pasta com os dados reais dos clientes
-planilhas/
+# Ignorar a pasta com os dados reais dos clientes em um projeto real
+# planilhas/
 
-# Ignorar o banco de dados
-*.db
+# Ignorar o banco de dados em um projeto real
+# *.db
 
 # Ignorar pastas automáticas do Python
 __pycache__/
