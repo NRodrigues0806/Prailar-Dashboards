@@ -6,3 +6,6 @@ planilhas/
 
 # Ignorar pastas automáticas do Python
 __pycache__/
+
+# Ignorar senha local
+.streamlit/
