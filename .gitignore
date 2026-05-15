@@ -1,7 +1,7 @@
 # Ignorar a pasta com os dados reais dos clientes
 planilhas/
 
-# Ignorar o banco de dados que criaremos no futuro
+# Ignorar o banco de dados
 *.db
 
 # Ignorar pastas automáticas do Python

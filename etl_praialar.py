@@ -43,10 +43,10 @@ def limpar_visitas():
     df = df.dropna(subset=['Data'])
     
     # ORDENAR DECRESCENTE (Mais recentes no topo)
-    df = df.sort_values(by='Data', ascending=False)
+    df = df.sort_values(by='Data', ascending=False) # ascending=False - ordena do mais recente pro mais antigo
     
     # visual bonito de Dia/Mês/Ano
-    df['Data'] = df['Data'].dt.strftime('%d/%m/%Y')
+    df['Data'] = df['Data'].dt.strftime('%d/%m/%Y') #strftime - string format time, formata a data pra ficar mais legível no painel (ex: 12/04/2026)
     
     return df
 
@@ -63,7 +63,8 @@ def limpar_vendas():
     df['Total Convertidos'] = pd.to_numeric(df['Total Convertidos'], errors='coerce').fillna(0)
     df['Total recebidos'] = pd.to_numeric(df['Total recebidos'], errors='coerce').fillna(0)
     
-    canais = ['Internet', 'Showroom', 'Telefone', 'Rede social', 'Planilha', 'WhatsApp'] # Removido a coluna 'Portal' por ter valores de texto que não podem virar numéricos
+    # Removido a coluna 'Portal' por ter valores de texto que não podem virar numéricos
+    canais = ['Internet', 'Showroom', 'Telefone', 'Rede social', 'Planilha', 'WhatsApp'] 
     for canal in canais:
         if canal in df.columns: # If de Proteção se a coluna não existir
             df[canal] = pd.to_numeric(df[canal], errors='coerce').fillna(0) 
